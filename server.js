@@ -46,6 +46,9 @@ app.get('/products', async (req, res) => {
   const query = {};
   if (search) query.name = { $regex: search, $options: 'i' }; // Ensure this line exists
 
+  if (category) query.category = category;
+  if (brand) query.brand = brand;
+  
   try {
       const totalProducts = await productCollection.countDocuments(query);
       const products = await productCollection.find(query)
