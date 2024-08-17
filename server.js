@@ -48,7 +48,19 @@ app.get('/products', async (req, res) => {
 
   if (category) query.category = category;
   if (brand) query.brand = brand;
-  
+  if (priceRange) {
+      const [min, max] = priceRange.split('-').map(Number);
+      if (min > max) {
+          return res.status(400).json({ error: 'Invalid price range' });
+      }
+      query.price = { $gte: min, $lte: max };
+  }
+
+  const sortOptions = {};
+  if (sortBy === 'price_asc') sortOptions.price = 1;
+  if (sortBy === 'price_desc') sortOptions.price = -1;
+  if (sortBy === 'dateAdded_desc') sortOptions.dateAdded = -1;
+
   try {
       const totalProducts = await productCollection.countDocuments(query);
       const products = await productCollection.find(query)
