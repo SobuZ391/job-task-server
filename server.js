@@ -32,6 +32,37 @@ app.get('/', (req, res) => {
     res.send('API is running...');
 });
 
+app.get('/products', async (req, res) => {
+  const {
+      page = 1, limit = 10, search = '',
+      category, brand, priceRange, sortBy = 'dateAdded_desc'
+  } = req.query;
+
+  // Validate input
+  if (parseInt(page) < 1 || parseInt(limit) < 1) {
+      return res.status(400).json({ error: 'Invalid page or limit value' });
+  }
+
+
+  try {
+      const totalProducts = await productCollection.countDocuments(query);
+      const products = await productCollection.find(query)
+          .sort(sortOptions)
+          .skip((parseInt(page) - 1) * parseInt(limit))
+          .limit(parseInt(limit))
+          .toArray();
+
+      res.json({
+          totalPages: Math.ceil(totalProducts / parseInt(limit)),
+          currentPage: parseInt(page),
+          totalProducts,
+          products
+      });
+  } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch products', details: error.message });
+  }
+});
+
 
 async function startServer() {
     await connectToDatabase();
