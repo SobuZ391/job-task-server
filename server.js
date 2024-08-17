@@ -43,6 +43,8 @@ app.get('/products', async (req, res) => {
       return res.status(400).json({ error: 'Invalid page or limit value' });
   }
 
+  const query = {};
+  if (search) query.name = { $regex: search, $options: 'i' }; // Ensure this line exists
 
   try {
       const totalProducts = await productCollection.countDocuments(query);
